@@ -33,6 +33,7 @@ const addProduct = async (req, res) => {
   }
 
   try {
+    newProduct[0].createdAt = getDateTime();
     await db["menu"].update(
       { type: "menu" },
       { $push: { data: newProduct[0] } }

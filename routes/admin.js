@@ -13,15 +13,15 @@ import authAdmin from "../middleware/authAdmin.js";
 
 const router = Router();
 
-router.post("/addProduct", addProduct);
+router.post("/addProduct", authAdmin, addProduct);
 
 router.post("/login", loginAdmin);
 
 router.post("/addPromotion", authAdmin, addPromotion);
 
-router.put("/changeProduct", changeProduct);
+router.put("/changeProduct", authAdmin, changeProduct);
 
-router.delete("/removeProduct", removeProduct);
+router.delete("/removeProduct", authAdmin, removeProduct);
 
 router.delete("/deletePromotion", authAdmin, deletePromotion);
 
