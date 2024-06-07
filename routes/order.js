@@ -8,7 +8,7 @@ import {
   orderHistory,
   getCart,
 } from "../controllers/orderController.js";
-import authenticate from "../middleware/auth.js";
+import authCustomer from "../middleware/authCustomer.js";
 
 const router = Router();
 
@@ -31,6 +31,6 @@ router.get("/orderConfirmation/:orderId", orderConfirmation);
 router.post("/sendOrder/:orderId", sendOrder);
 
 // Order history and authentication
-router.get("/orderHistory/:userId", authenticate, orderHistory);
+router.get("/orderHistory/:userId", authCustomer, orderHistory);
 
 export default router;

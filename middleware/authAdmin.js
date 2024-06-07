@@ -1,6 +1,5 @@
 // Middleware to be used in routes to check if user is authenticated
-
-const authenticate = (req, res, next) => {
+const authAdmin = (req, res, next) => {
   if (global.currentUser) {
     req.user = global.currentUser;
     next();
@@ -13,4 +12,4 @@ const authenticate = (req, res, next) => {
   }
 };
 
-export default authenticate;
+export default authAdmin;
