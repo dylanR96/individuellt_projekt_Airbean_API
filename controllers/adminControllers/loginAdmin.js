@@ -1,4 +1,12 @@
 import db from "../../db/database.js";
+import joi from "joi";
+import bcrypt from "bcrypt";
+
+// Creates a JOI schema to validate user input
+const userSchema = joi.object({
+  username: joi.string().min(3).max(20).alphanum().required(),
+  password: joi.string().min(3).max(20).required(),
+});
 
 const loginAdmin = async (req, res) => {
   // Validates users input
@@ -11,7 +19,7 @@ const loginAdmin = async (req, res) => {
 
   try {
     // Get information about user from database
-    const user = await db.users.findOne({ username });
+    const user = await db.admin.findOne({ username });
 
     // Checks if user doesn't exist in database
     if (!user)
@@ -29,7 +37,7 @@ const loginAdmin = async (req, res) => {
     }
 
     // Checks if user exists in database and password is correct
-    global.currentUser = { id: user._id, username: user.username };
+    global.admin = { id: user._id, username: user.username };
 
     // Checks if user already exists in database
     res.status(200).json({

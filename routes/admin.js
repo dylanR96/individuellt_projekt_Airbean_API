@@ -15,11 +15,11 @@ const router = Router();
 
 router.post("/addProduct", authAdmin, addProduct);
 
-router.post("/login", authAdmin, loginAdmin);
+router.post("/login", loginAdmin);
 
 router.post("/addPromotion", authAdmin, addPromotion);
 
-router.put("/changeProduct", authAdmin, changeProduct);
+router.put("/changeProduct", changeProduct);
 
 router.delete("/removeProduct", authAdmin, removeProduct);
 

@@ -9,6 +9,7 @@ const dirname = path.dirname(filename);
 // Names of databases
 const database_names = [
   "company",
+  "menu",
   "order",
   "users",
   "completedOrder",
