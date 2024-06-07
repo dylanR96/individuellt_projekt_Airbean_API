@@ -1,79 +1,55 @@
 import db from "../../db/database.js";
-import menu from "../../services/menu.js";
 
 const addProduct = async (req, res) => {
-  // Creates unique ID for order
-  const orderId = Math.floor(Math.random() * (999 - 100) + 100);
-  // Makes order ID into a string
-  const myOrderId = orderId.toString();
-
   // Checks if data is an array or just an object
-  const newOrder = Array.isArray(req.body) ? req.body : [req.body];
+  const newProduct = Array.isArray(req.body) ? req.body : [req.body];
+
+  const allowedKeys = ["id", "title", "desc", "price"];
 
   // Error handling for input information from user
-  for (let order of newOrder) {
-    const { id, title, desc, price } = order;
-    if (id == null || title == null || desc == null || price == null) {
+  for (const products of newProduct) {
+    const productKeys = Object.keys(products);
+    if (
+      productKeys.length > 4 ||
+      !productKeys.every((key) => allowedKeys.includes(key))
+    ) {
       return res.status(400).json({
-        error: "Each order must contain id, title, desc, and price.",
+        error: "Each order must only contain id, title, desc, and price.",
       });
     }
-
+    const menu = await db["menu"].findOne({ type: "menu" });
     let itemFound = false;
-    for (let item of menu) {
-      if (
-        item._id === order.id &&
-        item.title === order.title &&
-        item.desc === order.desc &&
-        item.price === order.price
-      ) {
+    for (let item of menu.data) {
+      if (item._id === products.id || item.title === products.title) {
         itemFound = true;
         break;
       }
     }
 
-    if (!itemFound) {
+    if (itemFound) {
       return res.status(400).json({
-        error: "Items must match menu.",
+        error: "Items already exist.",
       });
     }
   }
 
   try {
-    // Adds estimated delivery to object
-    const { userId } = req.query;
-    if (userId === undefined) {
-      console.log(`Order created as a guest.`);
-    } else {
-      // Checks if user ID exists in database
-      const userExists = await db["users"].findOne({ _id: userId });
-
-      if (!userExists) {
-        return res.status(400).send("Incorrect user id");
-      }
-    }
-
     //Inserts created data into database
-
-    await db["order"].insert({
-      orderId: myOrderId,
-      estDelivery: createDeliveryTime(),
-      newOrder,
-      userId: userId,
-    });
+    await db["menu"].update(
+      { type: "menu" },
+      { $push: { data: newProduct[0] } }
+    );
     // Returns order ID for created order
-    return res.status(201).json(`Your order id: ${myOrderId}`);
+    return res.status(201).json(`Product was added to the menu`);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ error: "Error adding new order." });
+    return res.status(500).send({ error: "Error adding new product." });
   }
 };
 
 // To add a product to the order
 const changeProduct = async (req, res) => {
-  const { orderId } = req.params;
   const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
-
   for (let order of updatedItems) {
     const { id, title, desc, price } = order;
     if (!id || !title || !desc || !price) {
@@ -81,15 +57,11 @@ const changeProduct = async (req, res) => {
         error: "Each order must contain id, title, desc and price",
       });
     }
-    let itemFound = false;
 
-    for (let item of menu) {
-      if (
-        item._id === id &&
-        item.title === title &&
-        item.desc === desc &&
-        item.price === price
-      ) {
+    const menu = await db["menu"].findOne({ type: "menu" });
+    let itemFound = false;
+    for (let item of menu.data) {
+      if (item._id === id) {
         itemFound = true;
         break;
       }
@@ -97,27 +69,22 @@ const changeProduct = async (req, res) => {
 
     if (!itemFound) {
       return res.status(400).json({
-        error: "Items must match menu",
+        error: "Id must match menu id",
       });
     }
   }
 
   try {
-    const existingOrder = await db["order"].findOne({ orderId });
-    if (!existingOrder) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-    await db["order"].update(
-      { orderId },
-      { $push: { newOrder: updatedItems[0] } }
-    );
-    return res
-      .status(200)
-      .json({ message: "Order has been updated successfully", orderId });
+    const productData = await db["menu"].findOne({ _id });
+    console.log(id);
+    console.log(productData);
+    // await db["menu"].update(
+    //   { type: "menu" },
+    //   { $set: { data: updatedItems[0] } }
+    // );
+    return res.status(200).json({ message: "Product has been updated" });
   } catch (error) {
-    console.error("Error updating order");
-
-    return res.status(500).send({ error: "Error updating order" });
+    return res.status(500).send({ error: "Error updating product" });
   }
 };
 
