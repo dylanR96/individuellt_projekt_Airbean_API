@@ -13,7 +13,7 @@ import authAdmin from "../middleware/authAdmin.js";
 
 const router = Router();
 
-router.post("/addProduct", authAdmin, addProduct);
+router.post("/addProduct", addProduct);
 
 router.post("/login", loginAdmin);
 
@@ -21,7 +21,7 @@ router.post("/addPromotion", authAdmin, addPromotion);
 
 router.put("/changeProduct", changeProduct);
 
-router.delete("/removeProduct", authAdmin, removeProduct);
+router.delete("/removeProduct", removeProduct);
 
 router.delete("/deletePromotion", authAdmin, deletePromotion);
 
