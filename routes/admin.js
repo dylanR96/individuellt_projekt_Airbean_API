@@ -7,7 +7,7 @@ import {
 import loginAdmin from "../controllers/adminControllers/loginAdmin.js";
 import {
   addPromotion,
-  deletePromotion,
+  removePromotion,
 } from "../controllers/adminControllers/promotionControllers.js";
 import authAdmin from "../middleware/authAdmin.js";
 
@@ -23,6 +23,6 @@ router.put("/changeProduct", authAdmin, changeProduct);
 
 router.delete("/removeProduct", authAdmin, removeProduct);
 
-router.delete("/deletePromotion", deletePromotion);
+router.delete("/removePromotion", authAdmin, removePromotion);
 
 export default router;

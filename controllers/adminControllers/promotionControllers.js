@@ -3,31 +3,60 @@ import getDateTime from "../../services/currentTime.js";
 
 const addPromotion = async (req, res) => {
   const newPromotion = Array.isArray(req.body) ? req.body : [req.body];
-  const allowedKeys = ["id", "title", "desc", "price"];
+  const allowedKeys = ["promotion", "desc", "price", "items"];
+  const allowedSubKeys = ["title"];
 
   for (const promotion of newPromotion) {
     const promotionKeys = Object.keys(promotion);
     if (
-      promotionKeys.length > 4 ||
+      promotionKeys.length > 5 ||
       !promotionKeys.every((key) => allowedKeys.includes(key))
     ) {
       return res.status(400).json({
-        error: "Each promotion must only contain id, title, desc, and price.",
+        error:
+          "Each promotion must only contain promotion, desc, price, and items.",
       });
-    }
-    const menu = await db["menu"].findOne({ type: "menu" });
-    let itemFound = false;
-    for (let item of menu.data) {
-      if (item.title === promotion.title) {
-        itemFound = true;
-        break;
-      }
     }
 
-    if (!itemFound) {
-      return res.status(400).json({
-        error: "Items are not on the menu",
-      });
+    for (const productTitle of promotion.items) {
+      const productTitleKeys = Object.keys(productTitle);
+      if (
+        productTitleKeys.length > 2 ||
+        !productTitleKeys.every((key) => allowedSubKeys.includes(key))
+      ) {
+        return res.status(400).json({
+          error: "Promotion items must only contain titles.",
+        });
+      }
+      const menu = await db["menu"].findOne({ type: "menu" });
+      let itemFound = false;
+      for (let item of menu.data) {
+        if (item.title === productTitle.title) {
+          itemFound = true;
+          break;
+        }
+      }
+
+      if (!itemFound) {
+        return res.status(400).json({
+          error: "Items are not on the menu",
+        });
+      }
+
+      const promotions = await db["promotions"].findOne({ type: "promotions" });
+      let promotionFound = true;
+      for (let product of promotions.data) {
+        if (product.promotion === promotion.promotion) {
+          promotionFound = false;
+          break;
+        }
+      }
+
+      if (!promotionFound) {
+        return res.status(400).json({
+          error: "Promotion is already active.",
+        });
+      }
     }
   }
 
@@ -37,54 +66,61 @@ const addPromotion = async (req, res) => {
       { type: "promotions" },
       { $push: { data: newPromotion[0] } }
     );
-    return res.status(201).json(`Promotion was added to the menu`);
+    return res.status(201).json(`The promotion was added.`);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ error: "Error adding new promotion." });
+    return res.status(500).send({ error: "Error adding the new promotion." });
   }
 };
 
-const deletePromotion = async (req, res) => {
-  const removePromotion = Array.isArray(req.body) ? req.body : [req.body];
+const removePromotion = async (req, res) => {
+  const removePromotion = req.body;
 
-  for (let item of removePromotion) {
-    const { id, title, desc, price } = item;
-    if (!id || !title || !desc || !price) {
-      return res.status(400).json({
-        error: "Each order must contain id, title, desc and price",
-      });
-    }
+  const allowedKeys = ["promotion"];
 
-    const promotions = await db["promotions"].findOne({ type: "promotion" });
-    let productFound = false;
-    for (let product of promotions.data) {
-      if (
-        product._id === item.id &&
-        product.title === item.title &&
-        product.desc === item.desc &&
-        product.price === item.price
-      ) {
-        productFound = true;
-        break;
-      }
-    }
+  const promotionKeys = Object.keys(removePromotion);
+  if (
+    promotionKeys.length > 1 ||
+    !promotionKeys.every((key) => allowedKeys.includes(key))
+  ) {
+    return res.status(400).json({
+      error: "To delete a promotion, you only add the name of the promotion",
+    });
+  }
 
-    if (!productFound) {
-      return res.status(400).json({
-        error: "Products must match active promotions.",
-      });
+  const { promotion } = removePromotion;
+  if (!promotion) {
+    return res.status(400).json({
+      error: "You must add which promotion to remove",
+    });
+  }
+
+  const promotions = await db["promotions"].findOne({ type: "promotions" });
+  let promotionFound = false;
+  for (let product of promotions.data) {
+    if (product.promotion === promotion) {
+      promotionFound = true;
+      break;
     }
   }
+
+  if (!promotionFound) {
+    return res.status(400).json({
+      error: "No promotion with that name was found.",
+    });
+  }
+
   try {
-    const { id } = req.body;
+    const { promotion } = req.body;
     const promotionsData = await db["promotions"].findOne({
-      type: "promotion",
+      type: "promotions",
     });
     const remainingPromotions = promotionsData.data.filter((product) => {
-      return product._id != id;
+      console.log(product.promotion);
+      return product.promotion != promotion;
     });
     const updateResult = await db["promotions"].update(
-      { type: "promotion" },
+      { type: "promotions" },
       {
         $set: {
           data: remainingPromotions,
@@ -92,10 +128,10 @@ const deletePromotion = async (req, res) => {
       }
     );
 
-    return res.status(200).json({ message: "Promotion has been deleted" });
+    return res.status(200).json({ message: "The promotion has been deleted" });
   } catch (error) {
-    return res.status(500).send({ error: "Error deleting promotion" });
+    return res.status(500).send({ error: "Error deleting the promotion" });
   }
 };
 
-export { addPromotion, deletePromotion };
+export { addPromotion, removePromotion };

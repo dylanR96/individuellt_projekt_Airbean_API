@@ -2,30 +2,30 @@ import db from "../../db/database.js";
 import getDateTime from "../../services/currentTime.js";
 
 const addProduct = async (req, res) => {
-  // Checks if data is an array or just an object
   const newProduct = Array.isArray(req.body) ? req.body : [req.body];
-  const allowedKeys = ["id", "title", "desc", "price"];
+  const allowedKeys = ["_id", "title", "desc", "price"];
 
-  for (const products of newProduct) {
-    const productKeys = Object.keys(products);
+  for (const item of newProduct) {
+    const itemKeys = Object.keys(item);
     if (
-      productKeys.length > 4 ||
-      !productKeys.every((key) => allowedKeys.includes(key))
+      itemKeys.length > 4 ||
+      !itemKeys.every((key) => allowedKeys.includes(key))
     ) {
       return res.status(400).json({
-        error: "Each order must only contain id, title, desc, and price.",
+        error:
+          "Each new product must only contain _id, title, desc, and price.",
       });
     }
     const menu = await db["menu"].findOne({ type: "menu" });
-    let itemFound = false;
-    for (let item of menu.data) {
-      if (item._id === products.id || item.title === products.title) {
-        itemFound = true;
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
+      if (menuItem._id === item.id || menuItem.title === item.title) {
+        menuItemFound = true;
         break;
       }
     }
 
-    if (itemFound) {
+    if (menuItemFound) {
       return res.status(400).json({
         error: "Items already exist.",
       });
@@ -38,45 +38,46 @@ const addProduct = async (req, res) => {
       { type: "menu" },
       { $push: { data: newProduct[0] } }
     );
-    return res.status(201).json(`Product was added to the menu`);
+    return res.status(201).json(`The new product was added to the menu`);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ error: "Error adding new product." });
+    return res.status(500).send({ error: "Error adding the new product." });
   }
 };
 
 const changeProduct = async (req, res) => {
   const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
 
-  for (let order of updatedItems) {
-    const { id, title, desc, price } = order;
-    if (!id || !title || !desc || !price) {
+  for (let item of updatedItems) {
+    const { _id, title, desc, price } = item;
+    if (!_id || !title || !desc || !price) {
       return res.status(400).json({
-        error: "Each order must contain id, title, desc and price",
+        error:
+          "Each update must contain the id, title, desc and price of the product",
       });
     }
 
     const menu = await db["menu"].findOne({ type: "menu" });
-    let itemFound = false;
-    for (let item of menu.data) {
-      if (item._id === id) {
-        itemFound = true;
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
+      if (menuItem._id === _id) {
+        menuItemFound = true;
         break;
       }
     }
 
-    if (!itemFound) {
+    if (!menuItemFound) {
       return res.status(400).json({
         error: "Id must match menu id",
       });
     }
   }
   try {
-    const { id, title, desc, price } = req.body;
+    const { _id, title, desc, price } = req.body;
     const productData = await db["menu"].findOne({ type: "menu" });
 
     const productIndex = productData.data.findIndex(
-      (product) => product._id === id
+      (product) => product._id === _id
     );
     const updateResult = await db["menu"].update(
       { type: "menu" },
@@ -96,54 +97,54 @@ const changeProduct = async (req, res) => {
 };
 
 const removeProduct = async (req, res) => {
-  const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
+  const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
 
-  for (let order of updatedItems) {
-    const { id, title, desc, price } = order;
+  for (let item of updatedItems) {
+    const { id, title, desc, price } = item;
     if (!id || !title || !desc || !price) {
       return res.status(400).json({
-        error: "Each order must contain id, title, desc and price",
+        error: "To remove a product you must add the id, title, desc and price",
       });
     }
 
     const menu = await db["menu"].findOne({ type: "menu" });
-    let itemFound = false;
-    for (let item of menu.data) {
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
       if (
-        item._id === order.id &&
-        item.title === order.title &&
-        item.desc === order.desc &&
-        item.price === order.price
+        menuItem._id === item.id &&
+        menuItem.title === item.title &&
+        menuItem.desc === item.desc &&
+        menuItem.price === item.price
       ) {
         itemFound = true;
         break;
       }
     }
 
-    if (!itemFound) {
+    if (!menuItemFound) {
       return res.status(400).json({
-        error: "Items must match menu.",
+        error: "Items must match the menu.",
       });
     }
   }
   try {
     const { id } = req.body;
     const productData = await db["menu"].findOne({ type: "menu" });
-    const newArray = productData.data.filter((product) => {
+    const newMenu = productData.data.filter((product) => {
       return product._id != id;
     });
     const updateResult = await db["menu"].update(
       { type: "menu" },
       {
         $set: {
-          data: newArray,
+          data: newMenu,
         },
       }
     );
 
-    return res.status(200).json({ message: "Product has been deleted" });
+    return res.status(200).json({ message: "The product has been deleted" });
   } catch (error) {
-    return res.status(500).send({ error: "Error deleting product" });
+    return res.status(500).send({ error: "Error deleting the product" });
   }
 };
 
