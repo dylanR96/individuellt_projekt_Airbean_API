@@ -1,32 +1,24 @@
 import db from "../../db/database.js";
-import menu from "../../services/menu.js";
+import getDateTime from "../../services/currentTime.js";
 
 const addPromotion = async (req, res) => {
-  // Creates unique ID for order
-  const orderId = Math.floor(Math.random() * (999 - 100) + 100);
-  // Makes order ID into a string
-  const myOrderId = orderId.toString();
+  const newPromotion = Array.isArray(req.body) ? req.body : [req.body];
+  const allowedKeys = ["id", "title", "desc", "price"];
 
-  // Checks if data is an array or just an object
-  const newOrder = Array.isArray(req.body) ? req.body : [req.body];
-
-  // Error handling for input information from user
-  for (let order of newOrder) {
-    const { id, title, desc, price } = order;
-    if (id == null || title == null || desc == null || price == null) {
+  for (const promotion of newPromotion) {
+    const promotionKeys = Object.keys(promotion);
+    if (
+      promotionKeys.length > 4 ||
+      !promotionKeys.every((key) => allowedKeys.includes(key))
+    ) {
       return res.status(400).json({
-        error: "Each order must contain id, title, desc, and price.",
+        error: "Each promotion must only contain id, title, desc, and price.",
       });
     }
-
+    const menu = await db["menu"].findOne({ type: "menu" });
     let itemFound = false;
-    for (let item of menu) {
-      if (
-        item._id === order.id &&
-        item.title === order.title &&
-        item.desc === order.desc &&
-        item.price === order.price
-      ) {
+    for (let item of menu.data) {
+      if (item.title === promotion.title) {
         itemFound = true;
         break;
       }
@@ -34,97 +26,75 @@ const addPromotion = async (req, res) => {
 
     if (!itemFound) {
       return res.status(400).json({
-        error: "Items must match menu.",
+        error: "Items are not on the menu",
       });
     }
   }
 
   try {
-    // Adds estimated delivery to object
-    const { userId } = req.query;
-    if (userId === undefined) {
-      console.log(`Order created as a guest.`);
-    } else {
-      // Checks if user ID exists in database
-      const userExists = await db["users"].findOne({ _id: userId });
-
-      if (!userExists) {
-        return res.status(400).send("Incorrect user id");
-      }
-    }
-
-    //Inserts created data into database
-
-    await db["order"].insert({
-      orderId: myOrderId,
-      estDelivery: createDeliveryTime(),
-      newOrder,
-      userId: userId,
-    });
-    // Returns order ID for created order
-    return res.status(201).json(`Your order id: ${myOrderId}`);
+    newPromotion[0].createdAt = getDateTime();
+    await db["promotions"].update(
+      { type: "promotions" },
+      { $push: { data: newPromotion[0] } }
+    );
+    return res.status(201).json(`Promotion was added to the menu`);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ error: "Error adding new order." });
+    return res.status(500).send({ error: "Error adding new promotion." });
   }
 };
 
 const deletePromotion = async (req, res) => {
-  const orderId = req.params.orderId;
-  const itemId = parseInt(req.query.itemId, 10);
+  const removePromotion = Array.isArray(req.body) ? req.body : [req.body];
 
+  for (let item of removePromotion) {
+    const { id, title, desc, price } = item;
+    if (!id || !title || !desc || !price) {
+      return res.status(400).json({
+        error: "Each order must contain id, title, desc and price",
+      });
+    }
+
+    const promotions = await db["promotions"].findOne({ type: "promotion" });
+    let productFound = false;
+    for (let product of promotions.data) {
+      if (
+        product._id === item.id &&
+        product.title === item.title &&
+        product.desc === item.desc &&
+        product.price === item.price
+      ) {
+        productFound = true;
+        break;
+      }
+    }
+
+    if (!productFound) {
+      return res.status(400).json({
+        error: "Products must match active promotions.",
+      });
+    }
+  }
   try {
-    // Finds the order in the database
-    const orderData = await db["order"].findOne({ orderId });
-
-    // If order is not found in database
-    if (!orderData) {
-      return res.status(404).json({
-        order: orderId,
-        error: "Order not found, please enter a valid order id.",
-      });
-    }
-
-    // Finds the item in the order
-    const itemIndex = orderData.newOrder.findIndex(
-      (item) => item.id === itemId
+    const { id } = req.body;
+    const promotionsData = await db["promotions"].findOne({
+      type: "promotion",
+    });
+    const remainingPromotions = promotionsData.data.filter((product) => {
+      return product._id != id;
+    });
+    const updateResult = await db["promotions"].update(
+      { type: "promotion" },
+      {
+        $set: {
+          data: remainingPromotions,
+        },
+      }
     );
 
-    // If the product cant be found in the order
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        itemId,
-        error: "Product not found, please enter a valid product id.",
-      });
-    }
-
-    //  Removes the item from the order
-    const removedData = orderData.newOrder.splice(itemIndex, 1)[0];
-
-    // Creates a new order with the removed item but with the same order id
-    await db["order"].update(
-      { orderId: orderId },
-      { $set: { newOrder: orderData.newOrder } }
-    );
-
-    // If every item gets removed from the order, the order will be deleted
-    if (orderData.newOrder.length === 0) {
-      await db["order"].remove({
-        orderId,
-      });
-    }
-
-    // Returns the removed item and a message. If an error occurs, a status 500 will be returned instead
-    return res
-      .status(200)
-      .json({ removedData, message: "The product is removed" });
+    return res.status(200).json({ message: "Promotion has been deleted" });
   } catch (error) {
-    console.error(
-      "An error occurred while trying to remove the product:",
-      error
-    );
-
-    return res.status(500).json({ message: "Internal server error." });
+    return res.status(500).send({ error: "Error deleting promotion" });
   }
 };
 

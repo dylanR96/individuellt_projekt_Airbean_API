@@ -17,12 +17,12 @@ router.post("/addProduct", authAdmin, addProduct);
 
 router.post("/login", loginAdmin);
 
-router.post("/addPromotion", authAdmin, addPromotion);
+router.post("/addPromotion", addPromotion);
 
 router.put("/changeProduct", authAdmin, changeProduct);
 
 router.delete("/removeProduct", authAdmin, removeProduct);
 
-router.delete("/deletePromotion", authAdmin, deletePromotion);
+router.delete("/deletePromotion", deletePromotion);
 
 export default router;
