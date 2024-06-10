@@ -10,19 +10,33 @@ import {
   removePromotion,
 } from "../controllers/adminControllers/promotionControllers.js";
 import authAdmin from "../middleware/authAdmin.js";
+import {
+  checkAddPromotion,
+  checkRemovePromotion,
+} from "../middleware/checkPromotion.js";
+import {
+  checkAddProducts,
+  checkChangeProducts,
+  checkRemoveProducts,
+} from "../middleware/checkProducts.js";
 
 const router = Router();
 
-router.post("/addProduct", authAdmin, addProduct);
+router.post("/addProduct", checkAddProducts, authAdmin, addProduct);
 
 router.post("/login", loginAdmin);
 
-router.post("/addPromotion", addPromotion);
+router.post("/addPromotion", checkAddPromotion, authAdmin, addPromotion);
 
-router.put("/changeProduct", authAdmin, changeProduct);
+router.put("/changeProduct", checkChangeProducts, authAdmin, changeProduct);
 
-router.delete("/removeProduct", authAdmin, removeProduct);
+router.delete("/removeProduct", checkRemoveProducts, authAdmin, removeProduct);
 
-router.delete("/removePromotion", authAdmin, removePromotion);
+router.delete(
+  "/removePromotion",
+  checkRemovePromotion,
+  authAdmin,
+  removePromotion
+);
 
 export default router;

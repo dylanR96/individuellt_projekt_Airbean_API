@@ -3,18 +3,12 @@ import getDateTime from "../../services/currentTime.js";
 
 const addPromotion = async (req, res) => {
   const newPromotion = Array.isArray(req.body) ? req.body : [req.body];
-  const allowedKeys = ["promotion", "desc", "price", "items"];
   const allowedSubKeys = ["title"];
 
   for (const promotion of newPromotion) {
-    const promotionKeys = Object.keys(promotion);
-    if (
-      promotionKeys.length > 5 ||
-      !promotionKeys.every((key) => allowedKeys.includes(key))
-    ) {
+    if (typeof promotion.price === "string") {
       return res.status(400).json({
-        error:
-          "Each promotion must only contain promotion, desc, price, and items.",
+        error: "Price must be a number.",
       });
     }
 
@@ -75,18 +69,6 @@ const addPromotion = async (req, res) => {
 
 const removePromotion = async (req, res) => {
   const removePromotion = req.body;
-
-  const allowedKeys = ["promotion"];
-
-  const promotionKeys = Object.keys(removePromotion);
-  if (
-    promotionKeys.length > 1 ||
-    !promotionKeys.every((key) => allowedKeys.includes(key))
-  ) {
-    return res.status(400).json({
-      error: "To delete a promotion, you only add the name of the promotion",
-    });
-  }
 
   const { promotion } = removePromotion;
   if (!promotion) {

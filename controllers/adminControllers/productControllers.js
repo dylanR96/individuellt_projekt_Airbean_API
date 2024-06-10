@@ -3,7 +3,6 @@ import getDateTime from "../../services/currentTime.js";
 
 const addProduct = async (req, res) => {
   const newProduct = Array.isArray(req.body) ? req.body : [req.body];
-  const allowedKeys = ["_id", "title", "desc", "price"];
 
   for (const item of newProduct) {
     if (typeof item._id === "string" || typeof item.price === "string") {
@@ -11,16 +10,7 @@ const addProduct = async (req, res) => {
         error: "Id and price must be numbers, not strings.",
       });
     }
-    const itemKeys = Object.keys(item);
-    if (
-      itemKeys.length > 4 ||
-      !itemKeys.every((key) => allowedKeys.includes(key))
-    ) {
-      return res.status(400).json({
-        error:
-          "Each new product must only contain _id, title, desc, and price.",
-      });
-    }
+
     const menu = await db["menu"].findOne({ type: "menu" });
     let menuItemFound = false;
     for (let menuItem of menu.data) {
@@ -57,13 +47,6 @@ const changeProduct = async (req, res) => {
     if (typeof item._id === "string" || typeof item.price === "string") {
       return res.status(400).json({
         error: "Id and price must be numbers, not strings.",
-      });
-    }
-    const { _id, title, desc, price } = item;
-    if (!_id || !title || !desc || !price) {
-      return res.status(400).json({
-        error:
-          "Each update must contain the id, title, desc and price of the product",
       });
     }
 
@@ -109,16 +92,10 @@ const changeProduct = async (req, res) => {
 const removeProduct = async (req, res) => {
   const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
 
-  for (let item of updatedItems) {
+  for (let item of itemsToRemove) {
     if (typeof item._id === "string" || typeof item.price === "string") {
       return res.status(400).json({
         error: "Id and price must be numbers, not strings.",
-      });
-    }
-    const { id, title, desc, price } = item;
-    if (!id || !title || !desc || !price) {
-      return res.status(400).json({
-        error: "To remove a product you must add the id, title, desc and price",
       });
     }
 
@@ -131,7 +108,7 @@ const removeProduct = async (req, res) => {
         menuItem.desc === item.desc &&
         menuItem.price === item.price
       ) {
-        itemFound = true;
+        menuItemFound = true;
         break;
       }
     }
