@@ -6,6 +6,11 @@ const addProduct = async (req, res) => {
   const allowedKeys = ["_id", "title", "desc", "price"];
 
   for (const item of newProduct) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
     const itemKeys = Object.keys(item);
     if (
       itemKeys.length > 4 ||
@@ -49,6 +54,11 @@ const changeProduct = async (req, res) => {
   const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
 
   for (let item of updatedItems) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
     const { _id, title, desc, price } = item;
     if (!_id || !title || !desc || !price) {
       return res.status(400).json({
@@ -100,6 +110,11 @@ const removeProduct = async (req, res) => {
   const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
 
   for (let item of updatedItems) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
     const { id, title, desc, price } = item;
     if (!id || !title || !desc || !price) {
       return res.status(400).json({
