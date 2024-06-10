@@ -22,20 +22,21 @@ import {
 
 const router = Router();
 
-router.post("/addProduct", checkAddProducts, authAdmin, addProduct);
+router.post("/addProduct", authAdmin, checkAddProducts, addProduct);
 
 router.post("/login", loginAdmin);
 
-router.post("/addPromotion", checkAddPromotion, authAdmin, addPromotion);
+router.post("/addPromotion", authAdmin, checkAddPromotion, addPromotion);
 
-router.put("/changeProduct", checkChangeProducts, authAdmin, changeProduct);
+router.put("/changeProduct", authAdmin, checkChangeProducts, changeProduct);
 
-router.delete("/removeProduct", checkRemoveProducts, authAdmin, removeProduct);
+router.delete("/removeProduct", authAdmin, checkRemoveProducts, removeProduct);
 
 router.delete(
   "/removePromotion",
-  checkRemovePromotion,
   authAdmin,
+  checkRemovePromotion,
+
   removePromotion
 );
 
