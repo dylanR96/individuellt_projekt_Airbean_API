@@ -1,32 +1,8 @@
 import db from "../../db/database.js";
 import getDateTime from "../../services/currentTime.js";
 
-const addProduct = async (req, res) => {
-  const newProduct = Array.isArray(req.body) ? req.body : [req.body];
-
-  for (const item of newProduct) {
-    if (typeof item._id === "string" || typeof item.price === "string") {
-      return res.status(400).json({
-        error: "Id and price must be numbers, not strings.",
-      });
-    }
-
-    const menu = await db["menu"].findOne({ type: "menu" });
-    let menuItemFound = false;
-    for (let menuItem of menu.data) {
-      if (menuItem._id === item.id || menuItem.title === item.title) {
-        menuItemFound = true;
-        break;
-      }
-    }
-
-    if (menuItemFound) {
-      return res.status(400).json({
-        error: "Items already exist.",
-      });
-    }
-  }
-
+const addProduct = async (req, res, next) => {
+  const newProduct = req.newProduct;
   try {
     newProduct[0].createdAt = getDateTime();
     await db["menu"].update(
@@ -40,31 +16,8 @@ const addProduct = async (req, res) => {
   }
 };
 
-const changeProduct = async (req, res) => {
-  const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
-
-  for (let item of updatedItems) {
-    if (typeof item._id === "string" || typeof item.price === "string") {
-      return res.status(400).json({
-        error: "Id and price must be numbers, not strings.",
-      });
-    }
-
-    const menu = await db["menu"].findOne({ type: "menu" });
-    let menuItemFound = false;
-    for (let menuItem of menu.data) {
-      if (menuItem._id === _id) {
-        menuItemFound = true;
-        break;
-      }
-    }
-
-    if (!menuItemFound) {
-      return res.status(400).json({
-        error: "Id must match menu id",
-      });
-    }
-  }
+const changeProduct = async (req, res, next) => {
+  const updatedItems = req.newPromotion;
   try {
     const { _id, title, desc, price } = req.body;
     const productData = await db["menu"].findOne({ type: "menu" });
@@ -89,41 +42,13 @@ const changeProduct = async (req, res) => {
   }
 };
 
-const removeProduct = async (req, res) => {
-  const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
-
-  for (let item of itemsToRemove) {
-    if (typeof item._id === "string" || typeof item.price === "string") {
-      return res.status(400).json({
-        error: "Id and price must be numbers, not strings.",
-      });
-    }
-
-    const menu = await db["menu"].findOne({ type: "menu" });
-    let menuItemFound = false;
-    for (let menuItem of menu.data) {
-      if (
-        menuItem._id === item.id &&
-        menuItem.title === item.title &&
-        menuItem.desc === item.desc &&
-        menuItem.price === item.price
-      ) {
-        menuItemFound = true;
-        break;
-      }
-    }
-
-    if (!menuItemFound) {
-      return res.status(400).json({
-        error: "Items must match the menu.",
-      });
-    }
-  }
+const removeProduct = async (req, res, next) => {
+  const itemsToRemove = req.itemsToRemove;
   try {
-    const { id } = req.body;
+    const { _id } = req.body;
     const productData = await db["menu"].findOne({ type: "menu" });
     const newMenu = productData.data.filter((product) => {
-      return product._id != id;
+      return product._id != _id;
     });
     const updateResult = await db["menu"].update(
       { type: "menu" },

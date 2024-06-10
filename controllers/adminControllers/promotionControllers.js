@@ -1,59 +1,8 @@
 import db from "../../db/database.js";
 import getDateTime from "../../services/currentTime.js";
 
-const addPromotion = async (req, res) => {
-  const newPromotion = Array.isArray(req.body) ? req.body : [req.body];
-  const allowedSubKeys = ["title"];
-
-  for (const promotion of newPromotion) {
-    if (typeof promotion.price === "string") {
-      return res.status(400).json({
-        error: "Price must be a number.",
-      });
-    }
-
-    for (const productTitle of promotion.items) {
-      const productTitleKeys = Object.keys(productTitle);
-      if (
-        productTitleKeys.length > 2 ||
-        !productTitleKeys.every((key) => allowedSubKeys.includes(key))
-      ) {
-        return res.status(400).json({
-          error: "Promotion items must only contain titles.",
-        });
-      }
-      const menu = await db["menu"].findOne({ type: "menu" });
-      let itemFound = false;
-      for (let item of menu.data) {
-        if (item.title === productTitle.title) {
-          itemFound = true;
-          break;
-        }
-      }
-
-      if (!itemFound) {
-        return res.status(400).json({
-          error: "Items are not on the menu",
-        });
-      }
-
-      const promotions = await db["promotions"].findOne({ type: "promotions" });
-      let promotionFound = true;
-      for (let product of promotions.data) {
-        if (product.promotion === promotion.promotion) {
-          promotionFound = false;
-          break;
-        }
-      }
-
-      if (!promotionFound) {
-        return res.status(400).json({
-          error: "Promotion is already active.",
-        });
-      }
-    }
-  }
-
+const addPromotion = async (req, res, next) => {
+  const newPromotion = req.newPromotion;
   try {
     newPromotion[0].createdAt = getDateTime();
     await db["promotions"].update(
@@ -67,38 +16,14 @@ const addPromotion = async (req, res) => {
   }
 };
 
-const removePromotion = async (req, res) => {
-  const removePromotion = req.body;
-
+const removePromotion = async (req, res, next) => {
+  const removePromotion = req.removePromotion;
   const { promotion } = removePromotion;
-  if (!promotion) {
-    return res.status(400).json({
-      error: "You must add which promotion to remove",
-    });
-  }
-
-  const promotions = await db["promotions"].findOne({ type: "promotions" });
-  let promotionFound = false;
-  for (let product of promotions.data) {
-    if (product.promotion === promotion) {
-      promotionFound = true;
-      break;
-    }
-  }
-
-  if (!promotionFound) {
-    return res.status(400).json({
-      error: "No promotion with that name was found.",
-    });
-  }
-
   try {
-    const { promotion } = req.body;
     const promotionsData = await db["promotions"].findOne({
       type: "promotions",
     });
     const remainingPromotions = promotionsData.data.filter((product) => {
-      console.log(product.promotion);
       return product.promotion != promotion;
     });
     const updateResult = await db["promotions"].update(

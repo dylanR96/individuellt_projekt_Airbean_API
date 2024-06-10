@@ -1,6 +1,7 @@
 import joi from "joi";
+import db from "../db/database.js";
 
-const checkAddProducts = (req, res, next) => {
+const checkAddProducts = async (req, res, next) => {
   const productSchema = joi.object({
     _id: joi.number().required(),
     title: joi
@@ -26,10 +27,36 @@ const checkAddProducts = (req, res, next) => {
 
   const { error } = productSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+
+  const newProduct = Array.isArray(req.body) ? req.body : [req.body];
+
+  for (const item of newProduct) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
+
+    const menu = await db["menu"].findOne({ type: "menu" });
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
+      if (menuItem._id === item.id || menuItem.title === item.title) {
+        menuItemFound = true;
+        break;
+      }
+    }
+
+    if (menuItemFound) {
+      return res.status(400).json({
+        error: "Items already exist.",
+      });
+    }
+  }
+  req.newProduct = newProduct;
   next();
 };
 
-const checkChangeProducts = (req, res, next) => {
+const checkChangeProducts = async (req, res, next) => {
   const productSchema = joi.object({
     _id: joi.number().required(),
     title: joi
@@ -55,10 +82,36 @@ const checkChangeProducts = (req, res, next) => {
 
   const { error } = productSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+
+  const updatedItems = Array.isArray(req.body) ? req.body : [req.body];
+
+  for (let item of updatedItems) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
+
+    const menu = await db["menu"].findOne({ type: "menu" });
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
+      if (menuItem._id === item._id) {
+        menuItemFound = true;
+        break;
+      }
+    }
+
+    if (!menuItemFound) {
+      return res.status(400).json({
+        error: "Id must match menu id",
+      });
+    }
+  }
+  req.updatedItems = updatedItems;
   next();
 };
 
-const checkRemoveProducts = (req, res, next) => {
+const checkRemoveProducts = async (req, res, next) => {
   const productSchema = joi.object({
     _id: joi.number().required(),
     title: joi
@@ -84,6 +137,37 @@ const checkRemoveProducts = (req, res, next) => {
 
   const { error } = productSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+
+  const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
+
+  for (let item of itemsToRemove) {
+    if (typeof item._id === "string" || typeof item.price === "string") {
+      return res.status(400).json({
+        error: "Id and price must be numbers, not strings.",
+      });
+    }
+
+    const menu = await db["menu"].findOne({ type: "menu" });
+    let menuItemFound = false;
+    for (let menuItem of menu.data) {
+      if (
+        menuItem._id === item._id &&
+        menuItem.title === item.title &&
+        menuItem.desc === item.desc &&
+        menuItem.price === item.price
+      ) {
+        menuItemFound = true;
+        break;
+      }
+    }
+
+    if (!menuItemFound) {
+      return res.status(400).json({
+        error: "Items must match the menu.",
+      });
+    }
+  }
+  req.itemsToRemove = itemsToRemove;
   next();
 };
 
