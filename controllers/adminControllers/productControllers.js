@@ -11,7 +11,6 @@ const addProduct = async (req, res, next) => {
     );
     return res.status(201).json(`The new product was added to the menu`);
   } catch (error) {
-    console.log(error);
     return res.status(500).send({ error: "Error adding the new product." });
   }
 };
