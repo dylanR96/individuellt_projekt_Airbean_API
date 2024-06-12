@@ -7,7 +7,15 @@ const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 // Names of databases
-const database_names = ["company", "order", "users", "completedOrder"];
+const database_names = [
+  "company",
+  "menu",
+  "order",
+  "users",
+  "completedOrder",
+  "promotions",
+  "admin",
+];
 const db = {};
 
 // Create databases

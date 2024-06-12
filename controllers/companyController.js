@@ -5,10 +5,10 @@ import airbeanInfo from "../services/companyInfo.js";
 // Get menu
 const getMenu = async (req, res) => {
   try {
-    const menuData = await db["company"].findOne({ type: "menu" });
+    const menuData = await db["menu"].findOne({ type: "menu" });
 
     if (!menuData) {
-      const insertedData = await db["company"].insert({
+      const insertedData = await db["menu"].insert({
         type: "menu",
         data: menu,
       });
