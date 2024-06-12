@@ -37,10 +37,14 @@ http://localhost:8000/api/
 http://localhost:8000/api/company/menu  
 Method: GET
 
+To retrieve the menu add "menu" to the url and send the request.
+
 ### Company info:
 
 http://localhost:8000/api/company/companyInfo  
 Method: GET
+
+To retrieve the company info add "companyInfo" to the url and send the request.
 
 ### Create order:
 
@@ -52,6 +56,10 @@ Add query params Key: userID and the Value: {userId} when creating the order as 
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To create an order add the id, title, description and price to the body.
+To create the order as a user, login as the user,
+and add the key userID and the value your user id to the params.
 
 Example of JSON structure for creating several orders:
 
@@ -79,14 +87,18 @@ Will give the user the response: "Your order id: 000."
 http://localhost:8000/api/order/sendOrder/:orderID
 Method: POST
 
-To complete your order use sendOrder with your order id. Order will be sent to completedOrder.db. You can then see order history and order status.
+To complete your order use sendOrder with your order id.
+Order will be sent to completedOrder.db. You can then see order history and order status.
 
 ### Get cart:
 
 http://localhost:8000/api/order/getCart/:orderId
 Method: GET
 
-When you create an order in CreateOrder you’ll receive an orderId. Copy that orderId and paste it at the end of the URL. For example, if you receive a response of orderID 349 then paste it like this. http://localhost:8000/api/order/getCart/349
+When you create an order in CreateOrder you’ll receive an orderId.
+Copy that orderId and paste it at the end of the URL.
+For example, if you receive a response of orderID 349 then paste it like this.
+http://localhost:8000/api/order/getCart/349
 
 ### Add item cart:
 
@@ -95,7 +107,10 @@ Method: PUT
 
 If you want to add something in your cart then you can use this method.
 Almost like you did in getCart you’ll have to paste your orderID at the end of the URL.
-In the body tab in insomnia/postman. Take note that it’s very important that you choose something from the menu.js file otherwise you’ll receive: error: "Items must match menu". Go to: Vs Code >> services >> menu.js to see the menu list or make a get request: http://localhost:8000/api/company/menu
+In the body tab in insomnia/postman.
+Take note that it’s very important that you choose something from the menu.db file otherwise you’ll receive: error:
+"Items must match menu".
+Go to: Vs Code >> db >> menu.db to see the menu or make a get request: http://localhost:8000/api/company/menu
 
 ### Delete item:
 
@@ -104,10 +119,15 @@ Method: DELETE
 
 Go to the "Parameters" tab (in Postman or Insomnia).
 Add query params key: itemID and the value: {itemId} when deleting an item from the order.
-Order confirmation:
+
+### Order confirmation:
+
 http://localhost:8000/api/order/orderConfirmation/:orderID
 Method: GET
 \*Must be done after calling sendOrder.
+
+To retrieve the order confirmation, first create an order and complete the order.
+To retrieve the info add your order ID to the URL.
 
 ### Create user:
 
@@ -117,6 +137,10 @@ Method: POST
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To create a user, add the username key followed by the desired username.
+Also add the password key followed by the desired password.
+If the username is not occupied, the user will be created.
 
 Example of JSON structure for creating users:
 
@@ -150,6 +174,9 @@ Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
 
+To login as a user, add the username key followed by your username.
+Also add the password key followed by your password.
+
 Example of JSON structure for logging in users:
 
 ```json
@@ -178,6 +205,9 @@ Method: POST
 
 http://localhost:8000/api/order/orderHistory/:userID  
 Method: GET
+
+To receive the order history for a user, add the user id
+as a parameter in the url.
 
 Will give the user this response:
 
@@ -213,6 +243,9 @@ Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
 
+To login as the admin, add the username "admin"
+and the password "password.
+
 Required JSON structure for login in as Admin:
 
 ```json
@@ -238,6 +271,9 @@ Method: POST
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To add a new product, add an id, title, description
+and price for the new product.
 
 Example of JSON structure for adding a new product:
 
@@ -269,6 +305,11 @@ Method: PUT
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To change a product, add the id, title, desc
+and price of the item you want to change.
+If you don't want to change a field, just add the same information
+as present on the menu.
 
 Example of JSON structure for changing a product:
 
@@ -316,14 +357,13 @@ Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
 
+To remove a product add the id of the product you want to remove.
+
 Example of JSON structure for removing a product:
 
 ```json
 {
-  "_id": 10,
-  "title": "New super coffee",
-  "desc": "It's just a super coffee",
-  "price": 60
+  "_id": 10
 }
 ```
 
@@ -349,7 +389,7 @@ If product does not exist in menu:
 
 ```json
 {
-  "error": "Items must match the menu."
+  "error": "Item must match the menu."
 }
 ```
 
@@ -361,6 +401,9 @@ Method: POST
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To add a promotion, include name of promotion, description, price,
+and the items that are part of the promotion.
 
 Example of JSON structure for creating a promotion:
 
@@ -409,6 +452,8 @@ Method: DELETE
 Go to the "Body" tab (in Postman or Insomnia).
 Select "JSON" as the format.
 Paste your JSON structure into the json field.
+
+To remove a promotion, add the name of the promotion you want to remove.
 
 Example of JSON structure for removing a promotion:
 

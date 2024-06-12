@@ -112,28 +112,7 @@ const checkChangeProducts = async (req, res, next) => {
 };
 
 const checkRemoveProducts = async (req, res, next) => {
-  const productSchema = joi.object({
-    _id: joi.number().required(),
-    title: joi
-      .string()
-      .pattern(/[a-zA-Z]/, "contains at least one letter")
-      .required()
-      .messages({
-        "string.pattern.name":
-          "Title must contain at least one letter and can include numbers and letters only.",
-        "string.empty": "Title is required and cannot be empty.",
-      }),
-    desc: joi
-      .string()
-      .pattern(/[a-zA-Z]/, "contains at least one letter")
-      .required()
-      .messages({
-        "string.pattern.name":
-          "Desc must contain at least one letter and can include numbers and letters only.",
-        "string.empty": "Desc is required and cannot be empty.",
-      }),
-    price: joi.number().required(),
-  });
+  const productSchema = joi.object({ _id: joi.number().required() });
 
   const { error } = productSchema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -141,21 +120,16 @@ const checkRemoveProducts = async (req, res, next) => {
   const itemsToRemove = Array.isArray(req.body) ? req.body : [req.body];
 
   for (let item of itemsToRemove) {
-    if (typeof item._id === "string" || typeof item.price === "string") {
+    if (typeof item._id === "string") {
       return res.status(400).json({
-        error: "Id and price must be numbers, not strings.",
+        error: "Id must be a number, not a string.",
       });
     }
 
     const menu = await db["menu"].findOne({ type: "menu" });
     let menuItemFound = false;
     for (let menuItem of menu.data) {
-      if (
-        menuItem._id === item._id &&
-        menuItem.title === item.title &&
-        menuItem.desc === item.desc &&
-        menuItem.price === item.price
-      ) {
+      if (menuItem._id === item._id) {
         menuItemFound = true;
         break;
       }
@@ -163,7 +137,7 @@ const checkRemoveProducts = async (req, res, next) => {
 
     if (!menuItemFound) {
       return res.status(400).json({
-        error: "Items must match the menu.",
+        error: "Item must match the menu.",
       });
     }
   }
