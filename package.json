@@ -4,10 +4,12 @@
   "type": "module",
   "description": "Dylan, Eric, Jonathan, Marina, Shahin, Sofia",
   "main": "server.js",
-  "scripts": {
-    "server": "nodemon server",
-    "dev": "npm run server",
-    "start": "node server.js"
+   "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite",
+    "dev:server": "nodeserver.js", 
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +22,8 @@
     "express": "^4.19.2",
     "joi": "^17.13.1",
     "nedb-promises": "^6.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "typescript": "^5.5.3",
     "vite": "^5.3.4"
   },
