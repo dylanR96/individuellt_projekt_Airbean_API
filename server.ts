@@ -1,10 +1,10 @@
 import express, { Express, Request, Response, NextFunction} from "express";
-import errorHandler from "./middleware/errorHandler";
-import notFound from "./middleware/notFound";
-import company from "./routes/company";
-import order from "./routes/order";
-import users from "./routes/users";
-import admin from "./routes/admin";
+import errorHandler from "./server/middleware/errorHandler";
+import notFound from "./server/middleware/notFound";
+import company from "./server/routes/company";
+import order from "./server/routes/order";
+import users from "./server/routes/users";
+import admin from "./server/routes/admin";
 
 const port: number = 8000;
 const app: Express = express();
@@ -13,7 +13,7 @@ declare global {
   let currentUser: any;
 }
 
-global.currentUser = null;
+global.currentUser = null; // Look into this 
 
 // Middlewares
 app.use(express.json());
