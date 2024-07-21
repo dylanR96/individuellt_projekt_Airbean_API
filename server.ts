@@ -9,12 +9,6 @@ import admin from "./server/routes/admin";
 const port: number = 8000;
 const app: Express = express();
 
-declare global {
-  let currentUser: any;
-}
-
-global.currentUser = null; // Look into this 
-
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
