@@ -1,6 +1,7 @@
 import joi from "joi";
 import db from "../db/database.js";
-import bcrypt from "bcrypt";
+import users from "../models/modelUser"
+import mongooseBcrypt from 'mongoose-bcrypt';
 
 // Creates a JOI schema to validate user input
 const userSchema = joi.object({
