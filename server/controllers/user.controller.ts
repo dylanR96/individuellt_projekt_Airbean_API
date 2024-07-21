@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
 import { getErrorMessage } from '../utils/error.util';
-import * as userServices from '../../services/user.service';
+import * as userServices from '../services/user.service';
 
 export const createUser = async (req: Request, res: Response) => {
 
   try {
-    await userServices.register(req.body)
+    await userServices.signup(req.body)
     res.status(200).send("User created");
 
   } catch (err) {
